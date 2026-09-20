@@ -43,10 +43,11 @@
             const data = await res.json();
             
             if (res.ok) {
+                // 登入成功：儲存 Token 並直接跳轉首頁（不跳出 alert）
                 localStorage.setItem("token", data.access_token);
-                alert(`登入成功！歡迎回來，${data.username}`);
                 window.location.href = "/";
             } else {
+                // 登入失敗：顯示錯誤、清除輸入欄位並聚焦
                 alert(data.detail || "登入失敗，請重新輸入");
                 emailInput.value = "";
                 passwordInput.value = "";

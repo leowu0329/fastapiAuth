@@ -56,15 +56,34 @@
                 </li>
             </ul>
             <div class="p-3 border-top border-secondary">
-                <button class="btn btn-outline-danger w-100 btn-sm text-start text-truncate" onclick="confirmLogout()" title="登出系統">
+                <button class="btn btn-outline-danger w-100 btn-sm text-start text-truncate" onclick="openLogoutModal()" title="登出系統">
                     <i class="fa-solid fa-right-from-bracket me-2"></i><span class="nav-text">登出系統</span>
                 </button>
             </div>
         </nav>
 
-        <!-- 主要內容區塊：強制使用 h-100 讓未登入頁面也能撐滿高度並置中 -->
+        <!-- 主要內容區塊 -->
         <div id="content-area" class="h-100 w-100 d-flex flex-column justify-content-center align-items-center">
             {% block content %}{% endblock %}
+        </div>
+    </div>
+
+    <!-- Bootstrap 登出確認 Modal -->
+    <div class="modal fade" id="logoutModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fa-solid fa-triangle-exclamation text-warning me-2"></i>系統提示</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    確定要登出系統嗎？
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-danger" onclick="executeLogout()">確定登出</button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -89,13 +108,20 @@
             }
         });
 
-        function confirmLogout() {
-            if (confirm("確定要登出系統嗎？")) {
-                localStorage.removeItem("token");
-                fetch("/api/auth/logout", { method: "POST" }).then(() => {
-                    window.location.href = "/login";
-                });
-            }
+        // 開啟 Bootstrap 登出確認 Modal
+        let logoutModalInstance = null;
+        function openLogoutModal() {
+            const modalEl = document.getElementById('logoutModal');
+            logoutModalInstance = new bootstrap.Modal(modalEl);
+            logoutModalInstance.show();
+        }
+
+        // 執行登出
+        function executeLogout() {
+            localStorage.removeItem("token");
+            fetch("/api/auth/logout", { method: "POST" }).then(() => {
+                window.location.href = "/login";
+            });
         }
     </script>
     {% block extra_js %}{% endblock %}

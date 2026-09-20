@@ -4,12 +4,67 @@
 <div class="container-fluid h-100 d-flex flex-column justify-content-center align-items-center">
     <div class="card shadow-sm border-0 p-4 p-md-5 w-100" style="max-width: 800px;">
         <h1 class="fw-bold text-primary mb-3"><i class="fa-solid fa-house-chimney me-2"></i>歡迎回到首頁</h1>
-        <p class="text-muted mb-4">您已成功登入系統。您可以點擊左側邊欄右上角的圖示按鈕來收合側邊欄（將自動切換為小圖示顯示）。</p>
-        <hr class="my-4">
+        <p class="text-muted mb-3">您已成功登入系統。以下是您的帳號資訊：</p>
+        
+        <!-- 帳號時間資訊區塊 -->
+        <div class="alert alert-light border mb-4">
+            <div class="row text-secondary small">
+                <div class="col-md-6 mb-2 mb-md-0">
+                    <i class="fa-solid fa-calendar-plus text-success me-2"></i><strong>帳號建立時間：</strong> <span id="createdAt">載入中...</span>
+                </div>
+                <div class="col-md-6">
+                    <i class="fa-solid fa-clock-rotate-left text-info me-2"></i><strong>最後登入時間：</strong> <span id="lastLogin">載入中...</span>
+                </div>
+            </div>
+        </div>
+
+        <hr class="my-3">
         <div class="d-flex gap-3 flex-wrap">
             <a href="/profile" class="btn btn-primary"><i class="fa-solid fa-user-pen me-2"></i>修改個人資料</a>
-            <button class="btn btn-outline-danger" onclick="confirmLogout()"><i class="fa-solid fa-right-from-bracket me-2"></i>登出系統</button>
+            <button class="btn btn-outline-danger" onclick="openLogoutModal()"><i class="fa-solid fa-right-from-bracket me-2"></i>登出系統</button>
         </div>
     </div>
 </div>
+{% endblock %}
+{% block extra_js %}
+<script>
+    async function loadUserAccountInfo() {
+        const token = localStorage.getItem("token");
+        if (!token) return;
+
+        try {
+            const res = await fetch("/api/auth/me", {
+                headers: { "Authorization": `Bearer token ${token}` } // 修正 Bearer 格式
+            });
+            
+            // 若上方的 Bearer 格式在您的程式碼中是寫 `Bearer ${token}` 請保持一致
+            // 這裡使用標準 Bearer 寫法：
+            const resReal = await fetch("/api/auth/me", {
+                headers: { "Authorization": `Bearer ${token}` }
+            });
+
+            if (resReal.ok) {
+                const data = await resReal.json();
+                
+                // 格式化並顯示建立時間
+                if (data.created_at) {
+                    document.getElementById("createdAt").innerText = new Date(data.created_at).toLocaleString();
+                } else {
+                    document.getElementById("createdAt").innerText = "早期註冊帳號 (無記錄)";
+                }
+
+                // 格式化並顯示最後登入時間
+                if (data.last_login) {
+                    document.getElementById("lastLogin").innerText = new Date(data.last_login).toLocaleString();
+                } else {
+                    document.getElementById("lastLogin").innerText = "首次登入";
+                }
+            }
+        } catch (error) {
+            console.error("無法取得帳號資訊:", error);
+        }
+    }
+
+    loadUserAccountInfo();
+</script>
 {% endblock %}

@@ -53,6 +53,13 @@ async def login(credentials: UserLogin, response: Response):
     if not user.get("is_verified", False):
         raise HTTPException(status_code=403, detail="信箱尚未驗證，請先收信完成驗證")
     
+    # 記錄最後登入時間（使用 UTC 時間）
+    now_utc = datetime.now(timezone.utc).isoformat()
+    await users_collection.update_one(
+        {"email": credentials.email},
+        {"$set": {"last_login": now_utc}}
+    )
+    
     access_token = create_access_token(data={"sub": user["email"]})
     response.set_cookie(key="access_token", value=f"Bearer {access_token}", httponly=True)
     return {"access_token": access_token, "token_type": "bearer", "username": user["username"]}
@@ -110,9 +117,18 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
     except Exception:
         raise HTTPException(status_code=401, detail="驗證失敗")
     
-    user = await users_collection.find_one({"email": email}, {"_id": 0, "hashed_password": 0})
+    user = await users_collection.find_one({"email": email}, {"hashed_password": 0})
     if user is None:
         raise HTTPException(status_code=404, detail="用戶不存在")
+    
+    # 處理 _id 序列化與自動解析建立時間
+    if "_id" in user:
+        # 如果原本沒有 created_at，直接從 MongoDB ObjectId 的生成時間解析
+        if "created_at" not in user or not user["created_at"]:
+            user["created_at"] = user["_id"].generation_time.isoformat()
+        # 將 ObjectId 轉為字串避免前端序列化報錯
+        user["_id"] = str(user["_id"])
+        
     return user
 
 @router.put("/me")
