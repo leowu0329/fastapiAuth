@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}首頁 - Ryowu Portal{% endblock %}
+{% block content %}
+<div class="container-fluid h-100 d-flex flex-column justify-content-center align-items-center">
+    <div class="card shadow-sm border-0 p-4 p-md-5 w-100" style="max-width: 800px;">
+        <h1 class="fw-bold text-primary mb-3"><i class="fa-solid fa-house-chimney me-2"></i>歡迎回到首頁</h1>
+        <p class="text-muted mb-4">您已成功登入系統。您可以點擊左側邊欄右上角的圖示按鈕來收合側邊欄（將自動切換為小圖示顯示）。</p>
+        <hr class="my-4">
+        <div class="d-flex gap-3 flex-wrap">
+            <a href="/profile" class="btn btn-primary"><i class="fa-solid fa-user-pen me-2"></i>修改個人資料</a>
+            <button class="btn btn-outline-danger" onclick="confirmLogout()"><i class="fa-solid fa-right-from-bracket me-2"></i>登出系統</button>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}登入{% endblock %}
+{% block content %}
+<div class="card shadow border-0 p-4 p-md-5 w-100" style="max-width: 450px;">
+    <h3 class="text-center mb-4"><i class="fa-solid fa-right-to-bracket me-2"></i>會員登入</h3>
+    <form id="loginForm">
+        <div class="mb-3">
+            <label class="form-label">電子郵件 (Email)</label>
+            <input type="email" class="form-control" id="email" required>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">密碼</label>
+            <input type="password" class="form-control" id="password" required>
+        </div>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <a href="/forgot-password" class="text-decoration-none small">忘記密碼？</a>
+        </div>
+        <button type="submit" class="btn btn-primary w-100 py-2 mb-3">登入</button>
+    </form>
+    <div class="text-center text-muted small">
+        還沒有帳號嗎？ <a href="/register" class="text-decoration-none fw-bold">立即註冊</a>
+    </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+    document.getElementById("loginForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        
+        const emailInput = document.getElementById("email");
+        const passwordInput = document.getElementById("password");
+
+        try {
+            const res = await fetch("/api/auth/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    email: emailInput.value,
+                    password: passwordInput.value
+                })
+            });
+            
+            const data = await res.json();
+            
+            if (res.ok) {
+                localStorage.setItem("token", data.access_token);
+                alert(`登入成功！歡迎回來，${data.username}`);
+                window.location.href = "/";
+            } else {
+                alert(data.detail || "登入失敗，請重新輸入");
+                emailInput.value = "";
+                passwordInput.value = "";
+                emailInput.focus();
+            }
+        } catch (error) {
+            console.error("連線錯誤:", error);
+            alert("網路連線發生錯誤，請稍後再試");
+            emailInput.value = "";
+            passwordInput.value = "";
+        }
+    });
+</script>
+{% endblock %}

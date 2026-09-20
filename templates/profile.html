@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+{% block title %}個人資料修改{% endblock %}
+{% block content %}
+<div class="container-fluid h-100 d-flex flex-column justify-content-center align-items-center py-4">
+    <div class="card shadow border-0 p-4 p-md-5 w-100" style="max-width: 800px;">
+        <h3 class="text-center mb-4"><i class="fa-solid fa-user-gear me-2"></i>個人資料修改</h3>
+        <form id="profileForm">
+            <div class="row">
+                <!-- 電子郵件 (唯讀) -->
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">電子郵件 (Email)</label>
+                    <input type="email" class="form-control" id="email" disabled>
+                </div>
+                <!-- 使用者名稱 -->
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">使用者名稱</label>
+                    <input type="text" class="form-control" id="username" required>
+                </div>
+                <!-- 別名 -->
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">別名</label>
+                    <input type="text" class="form-control" id="nickname">
+                </div>
+                <!-- 生日 -->
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">生日</label>
+                    <input type="date" class="form-control" id="birthdate">
+                </div>
+                <!-- 手機 -->
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">手機</label>
+                    <input type="tel" class="form-control" id="phone">
+                </div>
+                <!-- 權限 -->
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">權限</label>
+                    <select class="form-select" id="role">
+                        <option value="一般使用者">一般使用者</option>
+                        <option value="訪客">訪客</option>
+                        <option value="管理者">管理者</option>
+                    </select>
+                </div>
+                <!-- 廠別 -->
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">廠別</label>
+                    <input type="text" class="form-control" id="factory">
+                </div>
+                <!-- 部門 -->
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">部門</label>
+                    <input type="text" class="form-control" id="department">
+                </div>
+                <!-- 職務 -->
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">職務</label>
+                    <input type="text" class="form-control" id="position">
+                </div>
+                <!-- 住址 -->
+                <div class="col-12 mb-4">
+                    <label class="form-label">住址</label>
+                    <input type="text" class="form-control" id="address">
+                </div>
+            </div>
+            
+            <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-primary py-2">儲存變更並返回首頁</button>
+                <a href="/" class="btn btn-outline-secondary">取消返回首頁</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+    const token = localStorage.getItem("token");
+    if (!token) { window.location.href = "/login"; }
+
+    // 載入目前使用者資料並填入表單
+    async function loadProfile() {
+        try {
+            const res = await fetch("/api/auth/me", {
+                headers: { "Authorization": `Bearer ${token}` }
+            });
+            if (res.ok) {
+                const data = await res.json();
+                document.getElementById("email").value = data.email || "";
+                document.getElementById("username").value = data.username || "";
+                document.getElementById("nickname").value = data.nickname || "";
+                document.getElementById("birthdate").value = data.birthdate || "";
+                document.getElementById("phone").value = data.phone || "";
+                document.getElementById("role").value = data.role || "一般使用者";
+                document.getElementById("factory").value = data.factory || "";
+                document.getElementById("department").value = data.department || "";
+                document.getElementById("position").value = data.position || "";
+                document.getElementById("address").value = data.address || "";
+            } else {
+                localStorage.removeItem("token");
+                window.location.href = "/login";
+            }
+        } catch (error) {
+            console.error("載入失敗:", error);
+        }
+    }
+    loadProfile();
+
+    // 提交修改
+    document.getElementById("profileForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        
+        const payload = {
+            username: document.getElementById("username").value,
+            nickname: document.getElementById("nickname").value,
+            birthdate: document.getElementById("birthdate").value,
+            phone: document.getElementById("phone").value,
+            role: document.getElementById("role").value,
+            factory: document.getElementById("factory").value,
+            department: document.getElementById("department").value,
+            position: document.getElementById("position").value,
+            address: document.getElementById("address").value
+        };
+
+        try {
+            const res = await fetch("/api/auth/me", {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+            if (res.ok) {
+                alert("個人資料更新成功！即將返回首頁。");
+                window.location.href = "/"; // 修改成功後跳轉到首頁
+            } else {
+                alert(data.detail || "更新失敗");
+            }
+        } catch (error) {
+            console.error("更新錯誤:", error);
+            alert("網路連線發生錯誤");
+        }
+    });
+</script>
+{% endblock %}
