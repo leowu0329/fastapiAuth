@@ -30,21 +30,25 @@
 <script>
     async function loadUserAccountInfo() {
         const token = localStorage.getItem("token");
-        if (!token) return;
+        if (!token) {
+            window.location.href = "/login";
+            return;
+        }
 
         try {
             const res = await fetch("/api/auth/me", {
-                headers: { "Authorization": `Bearer token ${token}` } // 修正 Bearer 格式
-            });
-            
-            // 若上方的 Bearer 格式在您的程式碼中是寫 `Bearer ${token}` 請保持一致
-            // 這裡使用標準 Bearer 寫法：
-            const resReal = await fetch("/api/auth/me", {
                 headers: { "Authorization": `Bearer ${token}` }
             });
 
-            if (resReal.ok) {
-                const data = await resReal.json();
+            if (res.status === 401) {
+                // Token 過期或失效，自動清除並導向登入頁
+                localStorage.removeItem("token");
+                window.location.href = "/login";
+                return;
+            }
+
+            if (res.ok) {
+                const data = await res.json();
                 
                 // 格式化並顯示建立時間
                 if (data.created_at) {

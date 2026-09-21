@@ -1,0 +1,65 @@
+<!-- 通用訊息提示 Modal 組件 -->
+<div class="modal fade" id="alertModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header" id="alertModalHeader">
+                <h5 class="modal-title" id="alertModalTitle">
+                    <i class="fa-solid fa-circle-info me-2" id="alertModalIcon"></i>系統提示
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" id="alertModalCloseBtn"></button>
+            </div>
+            <div class="modal-body" id="alertModalBody">
+                提示內容
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="alertModalBtn" data-bs-dismiss="modal">確定</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    /**
+     * 全域共用的 Bootstrap 提示框函式
+     * @param {string} message - 提示訊息文字
+     * @param {Function} callback - 點擊確定關閉後的後續動作 (選填)
+     * @param {string} type - 樣式類型: 'success' 或 'danger' (預設為 success)
+     */
+    function showCustomAlert(message, callback = null, type = "success") {
+        const bodyEl = document.getElementById('alertModalBody');
+        const modalEl = document.getElementById('alertModal');
+        const headerEl = document.getElementById('alertModalHeader');
+        const titleIcon = document.getElementById('alertModalIcon');
+        const btnEl = document.getElementById('alertModalBtn');
+        const closeBtnEl = document.getElementById('alertModalCloseBtn');
+        
+        if (!bodyEl || !modalEl) {
+            alert(message);
+            return;
+        }
+
+        bodyEl.innerText = message;
+
+        // 根據類型切換 success（成功/綠色）或 danger（失敗/紅色）版型
+        if (type === "danger") {
+            headerEl.className = "modal-header bg-danger text-white";
+            titleIcon.className = "fa-solid fa-triangle-exclamation me-2";
+            btnEl.className = "btn btn-danger";
+            closeBtnEl.classList.add("btn-close-white");
+        } else {
+            headerEl.className = "modal-header bg-success text-white";
+            titleIcon.className = "fa-solid fa-circle-check me-2";
+            btnEl.className = "btn btn-success";
+            closeBtnEl.classList.add("btn-close-white");
+        }
+
+        const modalInstance = new bootstrap.Modal(modalEl);
+        
+        modalEl.addEventListener('hidden.bs.modal', function handler() {
+            modalEl.removeEventListener('hidden.bs.modal', handler);
+            if (callback) callback();
+        }, { once: true });
+
+        modalInstance.show();
+    }
+</script>

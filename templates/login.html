@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% block title %}登入{% endblock %}
 {% block content %}
+{% import "components/password_input.html" as comp %}
 <div class="card shadow border-0 p-4 p-md-5 w-100" style="max-width: 450px;">
     <h3 class="text-center mb-4"><i class="fa-solid fa-right-to-bracket me-2"></i>會員登入</h3>
     <form id="loginForm">
@@ -8,10 +9,9 @@
             <label class="form-label">電子郵件 (Email)</label>
             <input type="email" class="form-control" id="email" required>
         </div>
-        <div class="mb-3">
-            <label class="form-label">密碼</label>
-            <input type="password" class="form-control" id="password" required>
-        </div>
+        
+        {{ comp.render_password_input(id="password", label="密碼") }}
+        
         <div class="d-flex justify-content-between align-items-center mb-4">
             <a href="/forgot-password" class="text-decoration-none small">忘記密碼？</a>
         </div>
@@ -43,21 +43,22 @@
             const data = await res.json();
             
             if (res.ok) {
-                // 登入成功：儲存 Token 並直接跳轉首頁（不跳出 alert）
                 localStorage.setItem("token", data.access_token);
                 window.location.href = "/";
             } else {
-                // 登入失敗：顯示錯誤、清除輸入欄位並聚焦
-                alert(data.detail || "登入失敗，請重新輸入");
-                emailInput.value = "";
-                passwordInput.value = "";
-                emailInput.focus();
+                // 登入失敗：使用 Bootstrap Modal (danger) 呈現錯誤
+                showCustomAlert(data.detail || "登入失敗，請重新輸入", () => {
+                    emailInput.value = "";
+                    passwordInput.value = "";
+                    emailInput.focus();
+                }, "danger");
             }
         } catch (error) {
             console.error("連線錯誤:", error);
-            alert("網路連線發生錯誤，請稍後再試");
-            emailInput.value = "";
-            passwordInput.value = "";
+            showCustomAlert("網路連線發生錯誤，請稍後再試", () => {
+                emailInput.value = "";
+                passwordInput.value = "";
+            }, "danger");
         }
     });
 </script>
